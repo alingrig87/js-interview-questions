@@ -78,6 +78,67 @@
             margin-bottom: 20px;
         }
 
+        .badge-link {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .badge-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .category-badge-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .category-badge-link:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .difficulty-badge-link {
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #333;
+        }
+
+        .difficulty-badge-link.easy {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .difficulty-badge-link.easy:hover {
+            background: #38a169;
+        }
+
+        .difficulty-badge-link.medium {
+            background: #ffd93d;
+            color: #333;
+            border-color: #ffd93d;
+        }
+
+        .difficulty-badge-link.medium:hover {
+            background: #f0c000;
+        }
+
+        .difficulty-badge-link.hard {
+            background: #fc8181;
+            color: white;
+            border-color: #fc8181;
+        }
+
+        .difficulty-badge-link.hard:hover {
+            background: #f56565;
+        }
+
         .difficulty {
             display: inline-block;
             padding: 5px 12px;
@@ -358,8 +419,13 @@
         </div>
 
         <div class="question-card">
-            <div>
-                <span class="difficulty medium">MEDIUM</span>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <a href="index.html?category=practices" class="badge-link category-badge-link" title="Filter by ✅ Best Practices">
+                    ✅ Best Practices
+                </a>
+                <a href="index.html?difficulty=medium" class="badge-link difficulty-badge-link medium" title="Filter by MEDIUM">
+                    MEDIUM
+                </a>
             </div>
             
             <h2 class="question-title">Is it recommended to use eval</h2>
