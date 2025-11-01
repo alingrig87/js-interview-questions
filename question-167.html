@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How do you detect a mobile browser - JavaScript Interview Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .navigation {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.secondary {
+            background: #48bb78;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .difficulty.easy {
+            background: #48bb78;
+            color: white;
+        }
+
+        .difficulty.medium {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .difficulty.hard {
+            background: #fc8181;
+            color: white;
+        }
+
+        .category-badge {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .question-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .code-editor {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .code-header {
+            background: #2d3748;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .code-display {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hint {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-hint:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-hint:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .hint-container {
+            margin: 20px 0;
+        }
+
+        .hint {
+            background: #fff5e6;
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .hint.visible {
+            display: block;
+        }
+
+        .hint-title {
+            font-weight: bold;
+            color: #d97706;
+            margin-bottom: 8px;
+        }
+
+        .hint-content {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .hint-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .explanation {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .explanation.visible {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .explanation-title {
+            font-size: 1.3rem;
+            color: #0066cc;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .explanation-content {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .explanation-content h4 {
+            color: #0066cc;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .explanation-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        .explanation-content pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .explanation-content ul, .explanation-content ol {
+            margin-left: 20px;
+            margin-top: 10px;
+            line-height: 2;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            margin: 20px 0;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .question-title {
+                font-size: 1.4rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+            <div class="nav-buttons">
+                <a href="index.html" class="nav-btn secondary">🏠 Home</a>
+                <a href="question-166.html" class="nav-btn">← Previous</a>
+            </div>
+            <div class="nav-buttons">
+                <a href="question-168.html" class="nav-btn">Next →</a>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>🚀 JavaScript Interview Questions</h1>
+        </div>
+
+        <div class="question-card">
+            <div>
+                <span class="difficulty medium">MEDIUM</span>
+            </div>
+            
+            <h2 class="question-title">How do you detect a mobile browser</h2>
+
+            
+            <div class="code-editor">
+                <div class="code-header">📝 Code Example</div>
+                <div class="code-display">      window.mobilecheck = function () {
+        var mobileCheck = false;
+        (function (a) {
+          if (
+            /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
+              a
+            ) ||
+            /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+              a.substr(0, 4)
+            )
+          )
+            mobileCheck = true;
+        })(navigator.userAgent || navigator.vendor || window.opera);
+        return mobileCheck;
+      };
+      </div>
+            </div>
+        
+
+            <div class="controls">
+                <button class="btn btn-hint" onclick="showHint(1)">
+                    <span>💡</span>
+                    <span>Hint 1</span>
+                </button>
+                <button class="btn btn-hint" onclick="showHint(2)" disabled id="hint2Btn">
+                    <span>💡</span>
+                    <span>Hint 2</span>
+                </button>
+                <button class="btn btn-hint" onclick="showExplanation()" disabled id="explanationBtn">
+                    <span>📖</span>
+                    <span>Full Explanation</span>
+                </button>
+                <button class="btn btn-reset" onclick="resetExercise()">
+                    <span>🔄</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+
+            <div class="progress-indicator">
+                <div>Your Progress: <strong id="progressText">0%</strong></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="hint-container">
+                <div class="hint" id="hint1">
+                    <div class="hint-title">💡 Hint 1</div>
+                    <div class="hint-content">
+                        Think about the fundamental JavaScript concepts involved in this problem.
+                    </div>
+                </div>
+
+                <div class="hint" id="hint2">
+                    <div class="hint-title">💡 Hint 2</div>
+                    <div class="hint-content">
+                        Analyze how the JavaScript engine works and the order of execution.
+                    </div>
+                </div>
+            </div>
+
+            <div class="explanation" id="explanation">
+                <div class="explanation-title">📖 Full Explanation</div>
+                <div class="explanation-content">
+                    <p>
+      You can use regex which returns a true or false value depending on whether or not the user is browsing with a mobile.</p><p>      </p><p>      **[⬆ Back to Top](#table-of-contents)**</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHint = 0;
+
+        function showHint(hintNumber) {
+            const hint = document.getElementById('hint' + hintNumber);
+            hint.classList.add('visible');
+            currentHint = hintNumber;
+
+            if (hintNumber === 1) {
+                document.getElementById('hint2Btn').disabled = false;
+            }
+            if (hintNumber === 2) {
+                document.getElementById('explanationBtn').disabled = false;
+            }
+
+            updateProgress();
+        }
+
+        function showExplanation() {
+            const explanation = document.getElementById('explanation');
+            explanation.classList.add('visible');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let progress = 0;
+            if (currentHint >= 1) progress += 33;
+            if (currentHint >= 2) progress += 33;
+            if (document.getElementById('explanation').classList.contains('visible')) progress += 34;
+
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '%';
+        }
+
+        function resetExercise() {
+            document.getElementById('hint1').classList.remove('visible');
+            document.getElementById('hint2').classList.remove('visible');
+            document.getElementById('explanation').classList.remove('visible');
+            
+            document.getElementById('hint2Btn').disabled = true;
+            document.getElementById('explanationBtn').disabled = true;
+            
+            currentHint = 0;
+            updateProgress();
+        }
+    </script>
+</body>
+</html>

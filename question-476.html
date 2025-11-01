@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why is it important to remove event listeners after use? - JavaScript Interview Questions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .navigation {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.secondary {
+            background: #48bb78;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .difficulty.easy {
+            background: #48bb78;
+            color: white;
+        }
+
+        .difficulty.medium {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .difficulty.hard {
+            background: #fc8181;
+            color: white;
+        }
+
+        .category-badge {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .question-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .code-editor {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .code-header {
+            background: #2d3748;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .code-display {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 0 0 8px 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-hint {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-hint:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .btn-hint:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: #ed8936;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+
+        .hint-container {
+            margin: 20px 0;
+        }
+
+        .hint {
+            background: #fff5e6;
+            border-left: 4px solid #ffa500;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .hint.visible {
+            display: block;
+        }
+
+        .hint-title {
+            font-weight: bold;
+            color: #d97706;
+            margin-bottom: 8px;
+        }
+
+        .hint-content {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .hint-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .explanation {
+            background: #e6f7ff;
+            border-left: 4px solid #1890ff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .explanation.visible {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .explanation-title {
+            font-size: 1.3rem;
+            color: #0066cc;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .explanation-content {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .explanation-content h4 {
+            color: #0066cc;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .explanation-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+
+        .explanation-content pre {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .explanation-content ul, .explanation-content ol {
+            margin-left: 20px;
+            margin-top: 10px;
+            line-height: 2;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            margin: 20px 0;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .question-title {
+                font-size: 1.4rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="navigation">
+            <div class="nav-buttons">
+                <a href="index.html" class="nav-btn secondary">🏠 Home</a>
+                <a href="question-475.html" class="nav-btn">← Previous</a>
+            </div>
+            <div class="nav-buttons">
+                
+            </div>
+        </div>
+
+        <div class="header">
+            <h1>🚀 JavaScript Interview Questions</h1>
+        </div>
+
+        <div class="question-card">
+            <div>
+                <span class="difficulty medium">MEDIUM</span>
+            </div>
+            
+            <h2 class="question-title">Why is it important to remove event listeners after use?</h2>
+
+            
+            <div class="code-editor">
+                <div class="code-header">📝 Code Example</div>
+                <div class="code-display">     const button = document.getElementById("btn");
+
+      function handleClick() {
+        console.log("Clicked!");
+      }
+
+      button.addEventListener("click", handleClick);
+
+      // Always remove when done
+      button.removeEventListener("click", handleClick);
+  </div>
+            </div>
+        
+
+            <div class="controls">
+                <button class="btn btn-hint" onclick="showHint(1)">
+                    <span>💡</span>
+                    <span>Hint 1</span>
+                </button>
+                <button class="btn btn-hint" onclick="showHint(2)" disabled id="hint2Btn">
+                    <span>💡</span>
+                    <span>Hint 2</span>
+                </button>
+                <button class="btn btn-hint" onclick="showExplanation()" disabled id="explanationBtn">
+                    <span>📖</span>
+                    <span>Full Explanation</span>
+                </button>
+                <button class="btn btn-reset" onclick="resetExercise()">
+                    <span>🔄</span>
+                    <span>Reset</span>
+                </button>
+            </div>
+
+            <div class="progress-indicator">
+                <div>Your Progress: <strong id="progressText">0%</strong></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="hint-container">
+                <div class="hint" id="hint1">
+                    <div class="hint-title">💡 Hint 1</div>
+                    <div class="hint-content">
+                        Think about the fundamental JavaScript concepts involved in this problem.
+                    </div>
+                </div>
+
+                <div class="hint" id="hint2">
+                    <div class="hint-title">💡 Hint 2</div>
+                    <div class="hint-content">
+                        Analyze how the JavaScript engine works and the order of execution.
+                    </div>
+                </div>
+            </div>
+
+            <div class="explanation" id="explanation">
+                <div class="explanation-title">📖 Full Explanation</div>
+                <div class="explanation-content">
+                    <p>     
+  In JavaScript, you need to be mindful of removing event listeners to avoid memory leaks — especially in long-lived apps like single-page applications (SPAs) or when working with frameworks/libraries. Eventhough JavaScript has automatic garbage collection, memory leaks can still happen if:</p><p>  1. A DOM element is removed, but a listener still references it.
+  2. A callback (event listener) holds a reference to a large object or closure that can't be cleaned up.
+  3. Global objects like window, document etc retain listeners indefinitely unless manually removed.</p><p>  So if you add any event listeners to DOM element, it is a good practice to remove it after its usage as shown below,</p><p>  </p><p>  **[⬆ Back to Top](#table-of-contents)**</p><p><!-- QUESTIONS_END --></p><p>### Coding Exercise</p><p>#### 1. What is the output of below code</p><p></p><p>- 1: Undefined
+- 2: ReferenceError
+- 3: null
+- 4: {model: "Honda", color: "white", year: "2010", country: "UK"}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The function declarations are hoisted similar to any variables. So the placement for <code>Vehicle</code> function declaration doesn't make any difference.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 2. What is the output of below code</p><p></p><p>- 1: 1, undefined and undefined
+- 2: ReferenceError: X is not defined
+- 3: 1, undefined and number
+- 4: 1, number and number</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Of course the return value of <code>foo()</code> is 1 due to the increment operator. But the statement <code>let x = y = 0</code> declares a local variable x. Whereas y declared as a global variable accidentally. This statement is equivalent to,</p><p></p><p>Since the block scoped variable x is undefined outside of the function, the type will be undefined too. Whereas the global variable <code>y</code> is available outside the function, the value is 0 and type is number.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 3. What is the output of below code</p><p></p><p>- 1: A, B and C
+- 2: B, A and C
+- 3: A and C
+- 4: A, C and B</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The statements order is based on the event loop mechanism. The order of statements follows the below order,</p><p>1. At first, the main function is pushed to the stack.
+2. Then the browser pushes the first statement of the main function( i.e, A's console.log) to the stack, executing and popping out immediately.
+3. But <code>setTimeout</code> statement moved to Browser API to apply the delay for callback.
+4. In the meantime, C's console.log added to stack, executed and popped out.
+5. The callback of <code>setTimeout</code> moved from Browser API to message queue.
+6. The <code>main</code> function popped out from stack because there are no statements to execute
+7. The callback moved from message queue to the stack since the stack is empty.
+8. The <code>console.log</code> for B is added to the stack and display on the console.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 4. What is the output of below equality check</p><p></p><p>- 1: false
+- 2: true</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>This is due to the float point math problem. Since the floating point numbers are encoded in binary format, the addition operations on them lead to rounding errors. Hence, the comparison of floating points doesn't give expected results.
+You can find more details about the explanation here [0.30000000000000004.com/](https://0.30000000000000004.com/)</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 5. What is the output of below code</p><p></p><p>- 1: 1function
+- 2: 1object
+- 3: ReferenceError
+- 4: 1undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The main points in the above code snippets are,</p><p>1. You can see function expression instead function declaration inside if statement. So it always returns true.
+2. Since it is not declared(or assigned) anywhere, f is undefined and typeof f is undefined too.</p><p>In other words, it is same as</p><p></p><p>**Note:** It returns 1object for MS Edge browser</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 6. What is the output of below code</p><p></p><p>- 1: Hello World
+- 2: Object {message: "Hello World"}
+- 3: Undefined
+- 4: SyntaxError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>This is a semicolon issue. Normally semicolons are optional in JavaScript. So if there are any statements(in this case, return) missing semicolon, it is automatically inserted immediately. Hence, the function returned as undefined.</p><p>Whereas if the opening curly brace is along with the return keyword then the function is going to be returned as expected.</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 7. What is the output of below code</p><p></p><p>- 1: [empty, 'b', 'c', 'd'], empty, 3
+- 2: [null, 'b', 'c', 'd'], empty, 3
+- 3: [empty, 'b', 'c', 'd'], undefined, 4
+- 4: [null, 'b', 'c', 'd'], undefined, 4</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>The <code>delete</code> operator will delete the object property but it will not reindex the array or change its length. So the number or elements or length of the array won't be changed.
+If you try to print myChars then you can observe that it doesn't set an undefined value, rather the property is removed from the array. The newer versions of Chrome use <code>empty</code> instead of <code>undefined</code> to make the difference a bit clearer.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 8. What is the output of below code in latest Chrome</p><p></p><p>- 1: [undefined × 3], [undefined × 2, 100], [undefined × 3]
+- 2: [empty × 3], [empty × 2, 100], [empty × 3]
+- 3: [null × 3], [null × 2, 100], [null × 3]
+- 4: [], [100], []</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>The latest chrome versions display <code>sparse array</code>(they are filled with holes) using this empty x n notation. Whereas the older versions have undefined x n notation.
+**Note:** The latest version of FF displays <code>n empty slots</code> notation.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 9. What is the output of below code</p><p></p><p>- 1: 0, 1, 2
+- 2: 0, { return 1 }, 2
+- 3: 0, { return 1 }, { return 2 }
+- 4: 0, 1, undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>ES6 provides method definitions and property shorthands for objects. So both prop2 and prop3 are treated as regular function values.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 10. What is the output of below code</p><p></p><p>- 1: true, true
+- 2: true, false
+- 3: SyntaxError, SyntaxError,
+- 4: false, false</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>The important point is that if the statement contains the same operators(e.g, < or >) then it can be evaluated from left to right.
+The first statement follows the below order,</p><p>1. console.log(1 < 2 < 3);
+2. console.log(true < 3);
+3. console.log(1 < 3); // True converted as <code>1</code> during comparison
+4. True</p><p>Whereas the second statement follows the below order,</p><p>1. console.log(3 > 2 > 1);
+2. console.log(true > 1);
+3. console.log(1 > 1); // False converted as <code>0</code> during comparison
+4. False</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 11. What is the output of below code in non-strict mode</p><p></p><p>- 1: 1, 2, 3
+- 2: 3, 2, 3
+- 3: SyntaxError: Duplicate parameter name not allowed in this context
+- 4: 1, 2, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>In non-strict mode, the regular JavaScript functions allow duplicate named parameters. The above code snippet has duplicate parameters on 1st and 3rd parameters.
+The value of the first parameter is mapped to the third argument which is passed to the function. Hence, the 3rd argument overrides the first parameter.</p><p>**Note:** In strict mode, duplicate parameters will throw a Syntax Error.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 12. What is the output of below code</p><p></p><p>- 1: 1, 2, 3
+- 2: 3, 2, 3
+- 3: SyntaxError: Duplicate parameter name not allowed in this context
+- 4: 1, 2, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Unlike regular functions, the arrow functions doesn't not allow duplicate parameters in either strict or non-strict mode. So you can see <code>SyntaxError</code> in the console.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 13. What is the output of below code</p><p></p><p>- 1: ReferenceError: arguments is not defined
+- 2: 3
+- 3: undefined
+- 4: null</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Arrow functions do not have an <code>arguments, super, this, or new.target</code> bindings. So any reference to <code>arguments</code> variable tries to resolve to a binding in a lexically enclosing environment. In this case, the arguments variable is not defined outside of the arrow function. Hence, you will receive a reference error.</p><p>Where as the normal function provides the number of arguments passed to the function</p><p></p><p>But If you still want to use an arrow function then rest operator on arguments provides the expected arguments</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 14. What is the output of below code</p><p></p><p>- 1: True, False
+- 2: False, True</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>In order to be consistent with functions like <code>String.prototype.padStart</code>, the standard method name for trimming the whitespaces is considered as <code>trimStart</code>. Due to web web compatibility reasons, the old method name 'trimLeft' still acts as an alias for 'trimStart'. Hence, the prototype for 'trimLeft' is always 'trimStart'</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 15. What is the output of below code</p><p></p><p>- 1: undefined
+- 2: Infinity
+- 3: 0
+- 4: -Infinity</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>-Infinity is the initial comparant because almost every other value is bigger. So when no arguments are provided, -Infinity is going to be returned.
+**Note:** Zero number of arguments is a valid case.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 16. What is the output of below code</p><p></p><p>- 1: True, True
+- 2: True, False
+- 3: False, False
+- 4: False, True</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>As per the comparison algorithm in the ECMAScript specification(ECMA-262), the above expression converted into JS as below</p><p></p><p>So it doesn't matter about number brackets([]) around the number, it is always converted to a number in the expression.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 17. What is the output of below code</p><p></p><p>- 1: 20, 0
+- 2: 1010, 0
+- 3: 1010, 10-10
+- 4: NaN, NaN</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>The concatenation operator(+) is applicable for both number and string types. So if any operand is string type then both operands concatenated as strings. Whereas subtract(-) operator tries to convert the operands as number type.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 18. What is the output of below code</p><p></p><p>- 1: True, I'm True
+- 2: True, I'm False
+- 3: False, I'm True
+- 4: False, I'm False</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>In comparison operators, the expression <code>[0]</code> converted to Number([0].valueOf().toString()) which is resolved to false. Whereas <code>[0]</code> just becomes a truthy value without any conversion because there is no comparison operator.</p><p></p>
+</details></p><p>#### 19. What is the output of below code</p><p></p><p>- 1: [1,2,3,4]
+- 2: [1,2][3,4]
+- 3: SyntaxError
+- 4: 1,23,4</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The + operator is not meant or defined for arrays. So it converts arrays into strings and concatenates them.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 20. What is the output of below code</p><p></p><p>- 1: {1, 2, 3, 4}, {"F", "i", "r", "e", "f", "o", "x"}
+- 2: {1, 2, 3, 4}, {"F", "i", "r", "e", "o", "x"}
+- 3: [1, 2, 3, 4], ["F", "i", "r", "e", "o", "x"]
+- 4: {1, 1, 2, 3, 4}, {"F", "i", "r", "e", "f", "o", "x"}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Since <code>Set</code> object is a collection of unique values, it won't allow duplicate values in the collection. At the same time, it is case sensitive data structure.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 21. What is the output of below code</p><p></p><p>- 1: True
+- 2: False</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>JavaScript follows IEEE 754 spec standards. As per this spec, NaNs are never equal for floating-point numbers.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 22. What is the output of below code</p><p></p><p>- 1: 4
+- 2: NaN
+- 3: SyntaxError
+- 4: -1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The <code>indexOf</code> uses strict equality operator(===) internally and <code>NaN === NaN</code> evaluates to false. Since indexOf won't be able to find NaN inside an array, it returns -1 always.
+But you can use <code>Array.prototype.findIndex</code> method to find out the index of NaN in an array or You can use <code>Array.prototype.includes</code> to check if NaN is present in an array or not.</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 23. What is the output of below code</p><p></p><p>- 1: 1, [2, 3, 4, 5]
+- 2: 1, {2, 3, 4, 5}
+- 3: SyntaxError
+- 4: 1, [2, 3, 4]</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>When using rest parameters, trailing commas are not allowed and will throw a SyntaxError.
+If you remove the trailing comma and last element then it displays 1st answer</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 25. What is the output of below code</p><p></p><p>- 1: Promise {\<fulfilled\>: 10}
+- 2: 10
+- 3: SyntaxError
+- 4: Promise {\<rejected\>: 10}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Async functions always return a promise. But even if the return value of an async function is not explicitly a promise, it will be implicitly wrapped in a promise. The above async function is equivalent to below expression,</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 26. What is the output of below code</p><p></p><p>- 1: Promise {\<fulfilled\>: 10}
+- 2: 10
+- 3: SyntaxError
+- 4: Promise {\<resolved\>: undefined}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The await expression returns value 10 with promise resolution and the code after each await expression can be treated as existing in a <code>.then</code> callback. In this case, there is no return expression at the end of the function. Hence, the default return value of <code>undefined</code> is returned as the resolution of the promise. The above async function is equivalent to below expression,</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 27. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: 1, 2, 3, 4
+- 3: 4, 4, 4, 4
+- 4: 4, 3, 2, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Even though “processArray” is an async function, the anonymous function that we use for <code>forEach</code> is synchronous. If you use await inside a synchronous function then it throws a syntax error.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 28. What is the output of below code</p><p></p><p>- 1: 1 2 3 5 and Process completed!
+- 2: 5 5 5 5 and Process completed!
+- 3: Process completed! and 5 5 5 5
+- 4: Process completed! and 1 2 3 5</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The forEach method will not wait until all items are finished but it just runs the tasks and goes next. Hence, the last statement is displayed first followed by a sequence of promise resolutions.</p><p>But you control the array sequence using for..of loop,</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 29. What is the output of below code</p><p></p><p>- 1: Set(4) {"+0", "-0", NaN, undefined}
+- 2: Set(3) {"+0", NaN, undefined}
+- 3: Set(5) {"+0", "-0", NaN, undefined, NaN}
+- 4: Set(4) {"+0", NaN, undefined, NaN}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Set has few exceptions from equality check,</p><p>1. All NaN values are equal
+2. Both +0 and -0 considered as different values</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 30. What is the output of below code</p><p></p><p>- 1: true, true
+- 2: true, false
+- 3: false, true
+- 4: false, false</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Symbol follows below conventions,</p><p>1. Every symbol value returned from Symbol() is unique irrespective of the optional string.
+2. <code>Symbol.for()</code> function creates a symbol in a global symbol registry list. But it doesn't necessarily create a new symbol on every call, it checks first if a symbol with the given key is already present in the registry and returns the symbol if it is found. Otherwise a new symbol created in the registry.</p><p>**Note:** The symbol description is just useful for debugging purposes.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 31. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: one
+- 3: Symbol('one')
+- 4: Symbol</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p><code>Symbol</code> is a just a standard function and not an object constructor(unlike other primitives new Boolean, new String and new Number). So if you try to call it with the new operator will result in a TypeError</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 32. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: It is not a string!, It is not a number!
+- 3: It is not a string!, It is a number!
+- 4: It is a string!, It is a number!</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The return value of <code>typeof myNumber</code> or <code>typeof myString</code> is always a truthy value (either "number" or "string"). The ! operator operates on either <code>typeof myNumber</code> or <code>typeof myString</code>, converting them to boolean values. Since the value of both <code>!typeof myNumber</code> and <code>!typeof myString</code> is false, the if condition fails, and control goes to else block.</p><p>To make the ! operator operate on the equality expression, one needs to add parentheses:</p><p></p><p>Or simply use the inequality operator:</p><p></p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 33. What is the output of below code</p><p></p><p>- 1: {"myArray":['one', undefined, {}, Symbol]}, {}
+- 2: {"myArray":['one', null,null,null]}, {}
+- 3: {"myArray":['one', null,null,null]}, "{ [Symbol.for('one')]: 'one' }, [Symbol.for('one')]"
+- 4: {"myArray":['one', undefined, function(){}, Symbol('')]}, {}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>The symbols has below constraints,</p><p>1. The undefined, Functions, and Symbols are not valid JSON values. So those values are either omitted (in an object) or changed to null (in an array). Hence, it returns null values for the value array.
+2. All Symbol-keyed properties will be completely ignored. Hence it returns an empty object({}).</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 34. What is the output of below code</p><p></p><p>- 1: A, A
+- 2: A, B</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Using constructors, <code>new.target</code> refers to the constructor (points to the class definition of class which is initialized) that was directly invoked by new. This also applies to the case if the constructor is in a parent class and was delegated from a child constructor.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 35. What is the output of below code</p><p></p><p>- 1: 1, [2, 3], 4
+- 2: 1, [2, 3, 4], undefined
+- 3: 1, [2], 3
+- 4: SyntaxError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>It throws a syntax error because the rest element should not have a trailing comma. You should always consider using a rest operator as the last element.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 36. What is the output of below code</p><p></p><p>- 1: 30, 20
+- 2: 10, 20
+- 3: 10, undefined
+- 4: 30, undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>The object property follows below rules,</p><p>1. The object properties can be retrieved and assigned to a variable with a different name
+2. The property assigned a default value when the retrieved value is <code>undefined</code></p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 37. What is the output of below code</p><p></p><p>- 1: 200
+- 2: Error
+- 3: undefined
+- 4: 0</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>If you leave out the right-hand side assignment for the destructuring object, the function will look for at least one argument to be supplied when invoked. Otherwise you will receive an error <code>Error: Cannot read property 'length' of undefined</code> as mentioned above.</p><p>You can avoid the error with either of the below changes,</p><p>1. **Pass at least an empty object:**</p><p></p><p>2. **Assign default empty object:**</p><p></p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 38. What is the output of below code</p><p></p><p>- 1: Tom
+- 2: Error
+- 3: undefined
+- 4: John</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>It is possible to combine Array and Object destructuring. In this case, the third element in the array props accessed first followed by name property in the object.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 39. What is the output of below code</p><p></p><p>- 1: number, undefined, string, object
+- 2: undefined, undefined, string, object
+- 3: number, number, string, object
+- 4: number, number, number, number</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>If the function argument is set implicitly(not passing argument) or explicitly to undefined, the value of the argument is the default parameter. Whereas for other falsy values('' or null), the value of the argument is passed as a parameter.</p><p>Hence, the result of function calls categorized as below,</p><p>1. The first two function calls logs number type since the type of default value is number
+2. The type of '' and null values are string and object type respectively.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 40. What is the output of below code</p><p></p><p>- 1: ['Orange'], ['Orange', 'Apple']
+- 2: ['Orange'], ['Apple']</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Since the default argument is evaluated at call time, a new object is created each time the function is called. So in this case, the new array is created and an element pushed to the default empty array.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 41. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: ['Hello', 'John', 'Hello John'], ['Hello', 'John', 'Good morning!']</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Since parameters defined earlier are available to later default parameters, this code snippet doesn't throw any error.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 42. What is the output of below code</p><p></p><p>- 1: ReferenceError
+- 2: Inner</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>The functions and variables declared in the function body cannot be referred from default value parameter initializers. If you still try to access, it throws a run-time ReferenceError(i.e, <code>inner</code> is not defined).</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 43. What is the output of below code</p><p></p><p>- 1: [3, 4, 5], undefined
+- 2: SyntaxError
+- 3: [3, 4, 5], []
+- 4: [3, 4, 5], [undefined]</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>The rest parameter is used to hold the remaining parameters of a function and it becomes an empty array if the argument is not provided.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 44. What is the output of below code</p><p></p><p>- 1: ['key', 'value']
+- 2: TypeError
+- 3: []
+- 4: ['key']</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Spread syntax can be applied only to iterable objects. By default, Objects are not iterable, but they become iterable when used in an Array, or with iterating functions such as <code>map(), reduce(), and assign()</code>. If you still try to do it, it still throws <code>TypeError: obj is not iterable</code>.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 45. What is the output of below code</p><p></p><p>- 1: 1
+- 2: undefined
+- 3: SyntaxError
+- 4: TypeError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>Generators are not constructible type. But if you still proceed to do, there will be an error saying "TypeError: myGenFunc is not a constructor"</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 46. What is the output of below code</p><p></p><p>- 1: { value: 1, done: false }, { value: 2, done: true }, { value: undefined, done: true }
+- 2: { value: 1, done: false }, { value: 2, done: false }, { value: undefined, done: true }
+- 3: { value: 1, done: false }, { value: 2, done: true }, { value: 3, done: true }
+- 4: { value: 1, done: false }, { value: 2, done: false }, { value: 3, done: true }</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>A return statement in a generator function will make the generator finish. If a value is returned, it will be set as the value property of the object and done property to true. When a generator is finished, subsequent next() calls return an object of this form: <code>{value: undefined, done: true}</code>.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 47. What is the output of below code</p><p></p><p>- 1: 1,2,3 and 1,2,3
+- 2: 1,2,3 and 4,5,6
+- 3: 1 and 1
+- 4: 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The generator should not be re-used once the iterator is closed. i.e, Upon exiting a loop(on completion or using break & return), the generator is closed and trying to iterate over it again does not yield any more results. Hence, the second loop doesn't print any value.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 48. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: 38</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>If you use an invalid number(outside of 0-7 range) in the octal literal, JavaScript will throw a SyntaxError. In ES5, it treats the octal literal as a decimal number.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 49. What is the output of below code</p><p></p><p>- 1: 100
+- 2: ReferenceError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Unlike function declarations, class declarations are not hoisted. i.e, First You need to declare your class and then access it, otherwise it will throw a ReferenceError "Uncaught ReferenceError: Square is not defined".</p><p>**Note:** Class expressions also applies to the same hoisting restrictions of class declarations.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 50. What is the output of below code</p><p></p><p>- 1: undefined, undefined
+- 2: Person, Person
+- 3: SyntaxError
+- 4: Window, Window</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>When a regular or prototype method is called without a value for **this**, the methods return an initial this value if the value is not undefined. Otherwise global window object will be returned. In our case, the initial <code>this</code> value is undefined so both methods return window objects.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 51. What is the output of below code</p><p></p><p>- 1: SyntaxError
+- 2: BMW vehicle started, BMW car started
+- 3: BMW car started, BMW vehicle started
+- 4: BMW car started, BMW car started</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>The super keyword is used to call methods of a superclass. Unlike other languages the super invocation doesn't need to be a first statement. i.e, The statements will be executed in the same order of code.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 52. What is the output of below code</p><p></p><p>- 1: 30
+- 2: 25
+- 3: Uncaught TypeError
+- 4: SyntaxError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Even though we used constant variables, the content of it is an object and the object's contents (e.g properties) can be altered. Hence, the change is going to be valid in this case.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 53. What is the output of below code</p><p></p><p>- 1: false
+- 2: true</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Emojis are unicodes and the unicode for smile symbol is "U+1F642". The unicode comparison of same emojies is equivalent to string comparison. Hence, the output is always true.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 54. What is the output of below code?</p><p></p><p>- 1: string
+- 2: boolean
+- 3: NaN
+- 4: number</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>The typeof operator on any primitive returns a string value. So even if you apply the chain of typeof operators on the return value, it is always string.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 55. What is the output of below code?</p><p></p><p>- 1: If
+- 2: Else
+- 3: NaN
+- 4: SyntaxError</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>1. The type of operator on new Number always returns object. i.e, typeof new Number(0) --> object.
+2. Objects are always truthy in if block</p><p>Hence the above code block always goes to if section.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 55. What is the output of below code in non strict mode?</p><p></p><p>- 1: ""
+- 2: Error
+- 3: John
+- 4: Undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>It returns undefined for non-strict mode and returns Error for strict mode. In non-strict mode, the wrapper object is going to be created and get the mentioned property. But the object get disappeared after accessing the property in next line.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 56. What is the output of below code?</p><p></p><p>- 1: 11, 10
+- 2: 11, 11
+- 3: 10, 11
+- 4: 10, 10</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>11 and 10 is logged to the console.</p><p>The innerFunc is a closure which captures the count variable from the outerscope. i.e, 10. But the conditional has another local variable <code>count</code> which overwrites the ourter <code>count</code> variable. So the first console.log displays value 11.
+Whereas the second console.log logs 10 by capturing the count variable from outerscope.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 57. What is the output of below code ?</p><p>- 1: console.log(true && 'hi');
+- 2: console.log(true && 'hi' && 1);
+- 3: console.log(true && '' && 0);</p><p><details><summary><b>Answer</b></summary></p><p>- 1: hi
+- 2: 1
+- 3: ''</p><p>Reason : The operator returns the value of the first falsy operand encountered when evaluating from left to right, or the value of the last operand if they are all truthy.</p><p>**Note:** Below these values are consider as falsy value</p><p>- 1: 0
+- 2: ''
+- 3: null
+- 4: undefined
+- 5: NAN</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 58. What is the output of below code ?</p><p></p><p>- 1: false
+- 2: Error
+- 3: true</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Arrays have their own implementation of <code>toString</code> method that returns a comma-separated list of elements. So the above code snippet returns true. In order to avoid conversion of array type, we should use === for comparison.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 59. What is the output of below code?</p><p></p><p>- 1: Good morning
+- 2: getMessage is not a function
+- 3: getMessage is not defined
+- 4: Undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Hoisting will move variables and functions to be the top of scope. Even though getMessage is an arrow function the above function will considered as a variable due to it's variable declaration or assignment. So the variables will have undefined value in memory phase and throws an error '<code>getMessage</code> is not a function' at the code execution phase.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 60. What is the output of below code?</p><p></p><p>- 1: program finished
+- 2: Cannot predict the order
+- 3: program finished, promise finished
+- 4: promise finished, program finished</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Even though a promise is resolved immediately, it won't be executed immediately because its **.then/catch/finally** handlers or callbacks(aka task) are pushed into the queue. Whenever the JavaScript engine becomes free from the current program, it pulls a task from the queue and executes it. This is the reason why last statement is printed first before the log of promise handler.</p><p>**Note:** We call the above queue as "MicroTask Queue"</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 61. What is the output of below code?</p><p></p><p>- 1: <code>First line</code>, then print <code>a, b, c</code> in a new line, and finally print <code>Third line</code> as next line
+- 2: <code>First line</code>, then print <code>a, b, c</code> in a first line, and print <code>Third line</code> as next line
+- 3: Missing semi-colon error
+- 4: Cannot read properties of undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>When JavaScript encounters a line break without a semicolon, the JavaScript parser will automatically add a semicolon based on a set of rules called <code>Automatic Semicolon Insertion</code> which determines whether line break as end of statement or not to insert semicolon. But it does not assume a semicolon before square brackets [...]. So the first two lines considered as a single statement as below.</p><p></p><p>Hence, there will be **cannot read properties of undefined** error while applying the array square bracket on log function.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 62. Write a function that returns a random HEX color</p><p><details><summary><b>Solution 1 (Iterative generation)</b></summary>
+<p></p><p></p><p></p></p><p></details></p><p><details><summary><b>Solution 2 (One-liner)</b></summary>
+<p></p><p></p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 63. What is the output of below code?</p><p></p><p>- 1: of
+- 2: SyntaxError: Unexpected token of
+- 3: SyntaxError: Identifier 'of' has already been declared
+- 4: ReferenceError: of is not defined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>In JavaScript, <code>of</code> is not considered as a reserved keyword. So the variable declaration with <code>of</code> is accepted and prints the array value <code>of</code> using for..of loop.</p><p>But if you use reserved keyword such as <code>in</code> then there will be a syntax error saying <code>SyntaxError: Unexpected token in</code>,</p><p></p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 64. What is the output of below code?</p><p></p><p>- 1: [11, 18, 23, 25, 31, 33, 200]
+- 2: [11, 18, 200, 23, 25, 31, 33]
+- 3: [11, 25, 31, 23, 33, 18, 200]
+- 4: Cannot sort numbers</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>By default, the sort method sorts elements alphabetically. This is because elemented converted to strings and strings compared in UTF-16 code units order. Hence, you will see the above numbers not sorted as expected. In order to sort numerically just supply a comparator function which handles numeric sorts.</p><p></p><p>**Note:** Sort() method changes the original array.</p><p></p></p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 65. What is the output order of below code?</p><p></p><p>- 1: 1, 2, 3
+- 2: 1, 3, 2
+- 3: 3, 1, 2
+- 4: 3, 2, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>When the JavaScript engine parses the above code, the first two statements are asynchronous which will be executed later and third statement is synchronous statement which will be moved to callstack, executed and prints the number 3 in the console. Next, Promise is native in ES6 and it will be moved to Job queue which has high priority than callback queue in the execution order. At last, since setTimeout is part of WebAPI the callback function moved to callback queue and executed. Hence, you will see number 2 printed first followed by 1.</p><p></details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 66. What is the output of below code?</p><p></p><p>- 1: John, Hello John: Welcome
+- 2: undefined, Hello John, Welcome
+- 3: Reference error: name is not defined, Reference error: message is not defined
+- 4: undefined, Reference error: message is not defined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>IIFE(Immediately Invoked Function Expression) is just like any other function expression which won't be hoisted. Hence, there will be a reference error for message call.
+The behavior would be the same with below function expression of message1,</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 67. What is the output of below code?</p><p></p><p>- 1: Reference error: message is not defined
+- 2: Hello
+- 3: Bye
+- 4: Compile time error</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>As part of hoisting, initially JavaScript Engine or compiler will store first function in heap memory but later rewrite or replaces with redefined function content.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 68. What is the output of below code?</p><p></p><p>- 1: NewYork, Singapore
+- 2: NewYork, NewYork
+- 3: undefined, Singapore
+- 4: Singapore, Singapore</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Due to hositing feature, the variables declared with <code>var</code> will have <code>undefined</code> value in the creation phase so the outer variable <code>currentCity</code> will get same <code>undefined</code> value. But after few lines of code JavaScript engine found a new function call(<code>changeCurrentCity()</code>) to update the current city with <code>var</code> re-declaration. Since each function call will create a new execution context, the same variable will have <code>undefined</code> value before the declaration and new value(<code>Singapore</code>) after the declaration. Hence, the value <code>undefined</code> print first followed by new value <code>Singapore</code> in the execution phase.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 69. What is the output of below code in an order?</p><p></p><p>- 1: undefined, first, default
+- 2: default, default, default
+- 3: first, first, default
+- 4: undefined, undefined, undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Each context(global or functional) has it's own variable environment and the callstack of variables in a LIFO order. So you can see the message variable value from second, first functions in an order followed by global context message variable value at the end.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 70. What is the output of below code?</p><p></p><p>- 1: functionOne is not defined
+- 2: functionOne
+- 3: console.log("functionOne")
+- 4: undefined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>The function call <code>functionOne</code> is not going to be part of scope chain and it has it's own execution context with the enclosed variable environment. i.e, It won't be accessed from global context. Hence, there will be an error while invoking the function as <code>functionOne is not defined</code>.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 71. What is the output of below code?</p><p></p><p>- 1: {name: "John", eat: f}, {name: "John", eat: f}
+- 2: Window {...}, Window {...}
+- 3: {name: "John", eat: f}, undefined
+- 4: {name: "John", eat: f}, Window {...}</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p><code>this</code> keyword is dynamic scoped but not lexically scoped . In other words, it doesn't matter where <code>this</code> has been written but how it has been invoked really matter. In the above code snippet, the <code>user</code> object invokes <code>eat</code> function so <code>this</code> keyword refers to <code>user</code> object but <code>eatFruit</code> has been invoked by <code>eat</code> function and <code>this</code> will have default <code>Window</code> object.</p><p>The above pit fall fixed by three ways,</p><p>1. In ES6, the arrow function will make <code>this</code> keyword as lexically scoped. Since the surrounding object of <code>this</code> object is <code>user</code> object, the <code>eatFruit</code> function will contain <code>user</code> object for <code>this</code> object.</p><p></p><p>The next two solutions have been used before ES6 introduced.</p><p>2.  It is possible create a reference of <code>this</code> into a separate variable and use that new variable inplace of <code>this</code> keyword inside <code>eatFruit</code> function. This is a common practice in jQuery and AngularJS before ES6 introduced.</p><p></p><p>3. The <code>eatFruit</code> function can bind explicitly with <code>this</code> keyword where it refers <code>Window</code> object.</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 72. What is the output of below code?</p><p></p><p>- 1: Jello World!, John Smith
+- 2: Jello World!, John
+- 3: Hello World!, John Smith
+- 4: Hello World!, John</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>In JavaScript, primitives are immutable i.e. there is no way to change a primitive value once it gets created. So when you try to update the string's first character, there is no change in the string value and prints the same initial value <code>Hello World!</code>. Whereas in the later example, the concatenated value is re-assigned to the same variable which will result into creation of new memory block with the reference pointing to <code>John Smith</code> value and the old memory block value(<code>John</code>) will be garbage collected.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 73. What is the output of below code?</p><p></p><p>- 1: True
+- 2: False
+- 3: Compile time error</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>In JavaScript, the variables such as objects, arrays and functions comes under pass by reference. When you try to compare two objects with same content, it is going to compare memory address or reference of those variables. These variables always create separate memory blocks hence the comparison is always going to return false value.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 74. What is the output of below code?</p><p></p><p>- 1: Undefined
+- 2: Reference error:
+- 3: Hello, Good morning
+- 4: null</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>The variable <code>message</code> is still treated as closure(since it has been used in inner function) eventhough it has been declared after setTimeout function. The function with in setTimeout function will be sent to WebAPI and the variable declaration executed with in 5 seconds with the assigned value. Hence, the text declared for the variable will be displayed.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 75. What is the output of below code?</p><p></p><p>- 1: False
+- 2: True</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Eventhough both variables <code>a</code> and <code>b</code> refer a number value, the first declaration is based on constructor function and the type of the variable is going to be <code>object</code> type. Whereas the second declaration is primitive assignment with a number and the type is <code>number</code> type. Hence, the equality operator <code>===</code> will output <code>false</code> value.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 76. What is the type of below function?</p><p></p><p>- 1: Pure function
+- 2: Impure function</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>Eventhough the above function returns the same result for the same arguments(input) that are passed in the function, the <code>console.log()</code> statement causes a function to have side effects because it affects the state of an external code. i.e, the <code>console</code> object's state and depends on it to perform the job. Hence, the above function considered as impure function.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 77. What is the output of below code?</p><p></p><p>- 1: [{status: "fulfilled", value: undefined}, {status: "rejected", reason: undefined}]
+- 2: [{status: "fulfilled", value: undefined}, Uncaught(in promise)]
+- 3: Uncaught (in promise)
+- 4: [Uncaught(in promise), Uncaught(in promise)]</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>The above promises settled at the same time but one of them resolved and other one rejected. When you use <code>.all</code> method on these promises, the result will be short circuted by throwing an error due to rejection in second promise. But If you use <code>.allSettled</code> method then result of both the promises will be returned irrespective of resolved or rejected promise status without throwing any error.</p><p></p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 78. What is the output of below code?</p><p></p><p>- 1: try block, Error: An exception is thrown
+- 2: Error: An exception is thrown
+- 3: try block, Uncaught Error: Exception is thrown
+- 4: Uncaught Error: Exception is thrown</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>If you put <code>setTimeout</code> and <code>setInterval</code> methods inside the try clause and an exception is thrown, the catch clause will not catch any of them. This is because the try...catch statement works synchronously, and the function in the above code is executed asynchronously after a certain period of time. Hence, you will see runtime exception without catching the error. To resolve this issue, you have to put the try...catch block inside the function as below,</p><p></p><p>You can use <code>.catch()</code> function in promises to avoid these issues with asynchronous code.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 79. What is the output of below code?</p><p></p><p>- 1: 20, "inside" and 20, "outside"
+- 2: 20, "inside" and 10, "outside"
+- 3: 10, "inside" and 10, "outside"
+- 4: 10, "inside" and 20, "outside"</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 2</p><p>The variable "a" declared inside "if" has block scope and does not affect the value of the outer "a" variable.</p><p></p>
+</details></p><p>---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 80. What is the output of below code?</p><p></p><p>- 1: 0
+- 2: Undefined
+- 3: null
+- 4: [ ]</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The length of the array 'arr' has been set to 0, so the array becomes empty.</p><p></p>
+</details>
+---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 81. How do you verify two strings are anagrams or not?</p><p>An anagram is a word or phrase formed by rearranging all the letters of a different word or phrase exactly once. For example, the anagrams of "eat" word are "tea" and "ate".</p><p>You can split each word into characters, followed by sort action and later join them back. After that you can compare those two words to verify whether those two words are anagrams or not.</p><p></p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 82. What is the output of below code?</p><p></p><p>- 1: Hello, Good day
+- 2: Reference Error: printHello is not defined, Reference Error: printMessage is not defined
+- 3: Reference Error: printHello is not defined, Good day
+- 4: Hello, Reference Error: printMessage is not defined</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 4</p><p>The function <code>printHello</code> is hoisted to the top of the global scope and prints "Hello" to the console. Even <code>printMessage</code> function is hoisted, but it is lifted to the local scope(in "printHello") it was declared in. That is the reason you will endup with reference error for second function call.</p><p>But if the second function is invoked in the first function itself, there won't be any reference error.</p><p></p><p></p>
+</details>
+---</p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 83. What is the time taken to execute below timeout callback?</p><p></p><p>- 1: > 10 sec
+- 2: Immediately
+- 3: < 10 sec
+- 4: <= 5sec</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>Even though there is a timer of 5 seconds supplied to <code>setTimeout</code> callback, it won't get executed until the main thread is free and finished executing the remaining part of the code. In this example, the remaining code(while loop) takes 10seconds to finish it's execution. In the mean time, the callback will be stored in callback queue upon completion of its 5 seconds timer. After 10 seconds, the callback will be moved to callstack because the callstack is empty by poping out global execution context.</p><p></p>
+</details></p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 84. What is the output of below code?</p><p></p><p>- 1: ['wöchentlich','Woche', 'wäre', 'Wann']
+- 2: ['Wann', 'wäre', 'Woche', 'wöchentlich']
+- 3: ['Wann', 'Woche', 'wäre', 'wöchentlich']
+- 4: ['wäre', 'Wann', 'wöchentlich','Woche']</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 3</p><p>Javascript has a native method sort that allows sorting an array of elements in-place. It will treat each element as a string and sort it alphabetically. But if you try to sort an array of strings which has non-ASCII characters, you will receive a strange result. This is because characters with an accent have higher character codes.</p><p>In this case, the sort order of an array is ['Wann', 'Woche', 'wäre', 'wöchentlich'].</p><p>If you want to sort an array of string values which has non-ASCII characters in an ascending order, there are two possible options like **localeCompare** and **Intl.Collator** provided by ECMAScript Internationalization API.</p><p>**localeCompare:**</p><p></p><p>**Intl.Collator:**</p><p></p><p></p>
+</details></p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 85. What is the output of below code?</p><p></p><p>- 1: 1, 0
+- 2: 0, 0
+- 3: 0, 1
+- 4: 1, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>If a function is called with <code>undefined</code>, the <code>undefined</code> value is treated as a parameter. But if the function is not passed with any parameters, the <code>arguments</code> object doesn't include any argument eventhough the function has default function parameter. Hence, the function invocation with <code>undefined</code> has one argument and function call without any arguments has 0 arguments.</p><p></p>
+</details></p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>#### 86. What is the output of below code?</p><p></p><p>- 1: 1, 0
+- 2: 0, 0
+- 3: 0, 1
+- 4: 1, 1</p><p><details><summary><b>Answer</b></summary>
+<p></p><p>##### Answer: 1</p><p>If a function is called with <code>undefined</code>, the <code>undefined</code> value is treated as a parameter. But if the function is not passed with any parameters, the <code>arguments</code> object doesn't include any argument eventhough the function has default function parameter. Hence, the function invocation with <code>undefined</code> has one argument and function call without any arguments has 0 arguments.</p><p></p>
+</details></p><p>**[⬆ Back to Top](#table-of-contents)**</p><p>## Disclaimer</p><p>The questions provided in this repository are the summary of frequently asked questions across numerous companies. We cannot guarantee that these questions will actually be asked during your interview process, nor should you focus on memorizing all of them. The primary purpose is for you to get a sense of what some companies might ask — do not get discouraged if you don't know the answer to all of them ⁠— that is ok!</p><p>Good luck with your interview 😊</p><p>---</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHint = 0;
+
+        function showHint(hintNumber) {
+            const hint = document.getElementById('hint' + hintNumber);
+            hint.classList.add('visible');
+            currentHint = hintNumber;
+
+            if (hintNumber === 1) {
+                document.getElementById('hint2Btn').disabled = false;
+            }
+            if (hintNumber === 2) {
+                document.getElementById('explanationBtn').disabled = false;
+            }
+
+            updateProgress();
+        }
+
+        function showExplanation() {
+            const explanation = document.getElementById('explanation');
+            explanation.classList.add('visible');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let progress = 0;
+            if (currentHint >= 1) progress += 33;
+            if (currentHint >= 2) progress += 33;
+            if (document.getElementById('explanation').classList.contains('visible')) progress += 34;
+
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = progress + '%';
+        }
+
+        function resetExercise() {
+            document.getElementById('hint1').classList.remove('visible');
+            document.getElementById('hint2').classList.remove('visible');
+            document.getElementById('explanation').classList.remove('visible');
+            
+            document.getElementById('hint2Btn').disabled = true;
+            document.getElementById('explanationBtn').disabled = true;
+            
+            currentHint = 0;
+            updateProgress();
+        }
+    </script>
+</body>
+</html>
